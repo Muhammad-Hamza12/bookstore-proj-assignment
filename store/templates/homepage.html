@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage</title>
+    <style>
+
+.cart-actions {
+    padding: 10px;
+    text-align: right;
+}
+
+.purchase-button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.purchase-button:hover {
+    background-color: #45a049;
+}
+.shopping-cart {
+            position: fixed;
+            top: 0;
+            right: -300px; /* Initially off-screen */
+            width: 300px;
+            height: 100%;
+            background-color: #fff;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease-in-out;
+            z-index: 1000; /* Ensure it's above other content */
+            overflow-y: auto
+}
+.cart-header {
+    background-color: #f2f2f2;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-items {
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.cart-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.cart-item h4 {
+    margin: 0;
+}
+
+.close-cart {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.close-cart:hover {
+    background-color: #c82333;
+}
+
+        .add-to-cart-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.add-to-cart-button:hover {
+    background-color: #0056b3;
+}
+        .update-button {
+            background-color: #b5c22d;
+        }
+        .update-button:hover {
+            background-color: #0056b3;
+        }
+        .delete-button {
+            background-color: #dc3545;
+        }
+        .delete-button:hover {
+            background-color: #43c14a;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header h2 {
+            margin: 0;
+        }
+        .logout-form {
+            margin: 0;
+        }
+        .logout-form button {
+            padding: 8px 16px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .logout-form button:hover {
+            background-color: #d32f2f;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .button-group {
+            margin-top: 10px;
+        }
+        .button-group button {
+            margin-right: 10px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .button-group button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Welcome to the BookStore</h2>
+            <form class="logout-form" method="POST" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+
+        <!-- Books Section -->
+        <div class="section">
+            <h3>Books</h3>
+            <h3>Add a Book</h3>
+
+            <form id="add-book-form">
+                <input type="text" id="add-book-title" placeholder="Title">
+                <input type="text" id="add-book-author" placeholder="Author">
+                <input type="text" id="add-book-category" placeholder="Category">
+                <input type="text" id="add-book-published-date" placeholder="Published Date">
+                <input type="text" id="add-book-isbn" placeholder="ISBN">
+                <input type="text" id="add-book-price" placeholder="Price">
+            </form>
+            <div class="button-group">
+                <button onclick="addBook()">Add Book</button>
+            </div>
+            <table id="books-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Category</th>
+                        <th>publish date</th>
+                        <th>isbn</th>
+                        <th>price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Authors Section -->
+        <div class="section">
+            <h3>Authors</h3>
+            <h3>Add an Author</h3>
+
+            <form id="add-author-form">
+                <input type="text" id="add-author-name" placeholder="Name">
+            </form>
+            <div class="button-group">
+                <button onclick="addAuthor()">Add an Author</button>
+            </div>
+            <table id="authors-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Categories Section -->
+        <div class="section">
+            <h3>Categories</h3>
+            <h3>Add a Category</h3>
+
+            <form id="add-category-form">
+                <input type="text" id="add-category-name" placeholder="Name">
+            </form>
+            <div class="button-group">
+                <button onclick="addCategory()">Add Category</button>
+            </div>
+
+            <table id="categories-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+   <!-- Shopping Cart -->
+   <div id="shopping-cart" class="shopping-cart">
+    <div class="cart-header">
+        <h3>Shopping Cart</h3>
+        <button class="close-cart" onclick="closeCart()">Close</button>
+    </div>
+    <div class="cart-items">
+        <!-- Cart items will be dynamically inserted here -->
+    </div>
+    <div class="cart-total">
+        <h4>Total Price: <span id="cart-total-price">$0.00</span></h4>
+    </div>
+    <div class="cart-actions">
+        <button class="purchase-button" onclick="purchase()">Purchase</button>
+    </div>
+</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBooks();
+            loadAuthors();
+            loadCategories();
+        });
+
+        function getCookie(name) {
+            const cookieValue = document.cookie
+                .split('; ')
+                .find(cookie => cookie.startsWith(name))
+                ?.split('=')[1];
+            return cookieValue;
+        }
+
+        function loadBooks() {
+            const token = getCookie('access');
+            if (!token) {
+                alert('You need to log in first');
+                return;
+            }
+
+            fetch('/store/books/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                populateBooksTable(data);
+            })
+            .catch(error => console.error('Error fetching books:', error));
+        }
+
+        function populateBooksTable(books) {
+            const tbody = document.querySelector('#books-table tbody');
+            tbody.innerHTML = ''; 
+
+            books.forEach(book => {
+                const row = document.createElement('tr');
+                row.dataset.id = book.id;
+
+                row.innerHTML = `
+                    <td>${book.id}</td>
+                    <td contenteditable="true">${book.title}</td>
+                    <td contenteditable="true">${book.author.name}</td>
+                    <td contenteditable="true">${book.category.name}</td>
+                    <td contenteditable="true">${book.published_date}</td>
+                    <td contenteditable="true">${book.isbn}</td>
+                    <td contenteditable="true">${book.price}</td>
+                    <td>
+                        <button class="update-button" onclick="updateBook(this)">Update</button>
+                        <button class="delete-button" onclick="deleteBook(this)">Delete</button>
+                        <button class="add-to-cart-button" onclick="addToCart(${book.id})">Add to Cart</button>
+
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateBook(button) {
+            var row = button.closest('tr');
+            var bookId = row.dataset.id;
+            var title = row.cells[1].innerText;
+            var author = row.cells[2].innerText;
+            var category = row.cells[3].innerText;
+            var published_date = row.cells[4].innerText;
+            var isbn = row.cells[5].innerText;
+            var price = row.cells[6].innerText;
+
+            fetch('/store/books/'+bookId+'/', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getCookie('access'),
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    // id: bookId,
+                    title: title,
+                    author: {"name":author},
+                    category: {"name":category},
+                    published_date:published_date,
+                    isbn:isbn,
+                    price:price
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Book updated successfully!');
+                } else {
+                    alert('Error updating book.');
+                }
+            });
+        }
+
+        function deleteBook(button) {
+            var row = button.closest('tr');
+            var bookId = row.dataset.id;
+
+            fetch('/store/books/'+bookId+'/', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getCookie('access'),
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    //  id: bookId
+                     })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    row.remove();
+                    alert('Book deleted successfully!');
+                } else {
+                    alert('Error deleting book.');
+                }
+            });
+        }
+
+        function loadAuthors() {
+            const token = getCookie('access');
+            if (!token) {
+                alert('You need to log in first');
+                return;
+            }
+
+            fetch('/store/authors/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                populateAuthorsTable(data);
+            })
+            .catch(error => console.error('Error fetching authors:', error));
+        }
+
+        function populateAuthorsTable(authors) {
+            const tbody = document.querySelector('#authors-table tbody');
+            tbody.innerHTML = ''; 
+
+            authors.forEach(author => {
+                const row = document.createElement('tr');
+                row.dataset.id = author.id;
+
+                row.innerHTML = `
+                    <td>${author.id}</td>
+                    <td contenteditable="true">${author.name}</td>
+                    <td>
+                        <button class="update-button" onclick="updateAuthor(this)">Update</button>
+                        <button class="delete-button" onclick="deleteAuthor(this)">Delete</button>
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateAuthor(button) {
+            var row = button.closest('tr');
+            var authorId = row.dataset.id;
+            var name = row.cells[1].innerText;
+
+            fetch('/store/authors/'+authorId+'/', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getCookie('access'),
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    // id: authorId,
+                    name: name
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Author updated successfully!');
+                } else {
+                    alert('Error updating author.');
+                }
+            });
+        }
+
+        function deleteAuthor(button) {
+            var row = button.closest('tr');
+            var authorId = row.dataset.id;
+
+            fetch('/store/authors/'+authorId+'/', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getCookie('access'),
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ 
+                    // id: authorId 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    row.remove();
+                    alert('Author deleted successfully!');
+                } else {
+                    alert('Error deleting author.');
+                }
+            });
+        }
+
+        function loadCategories() {
+            const token = getCookie('access');
+            if (!token) {
+                alert('You need to log in first');
+                return;
+            }
+
+            fetch('/store/categories/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                populateCategoriesTable(data);
+            })
+            .catch(error => console.error('Error fetching categories:', error));
+        }
+
+        function populateCategoriesTable(categories) {
+            const tbody = document.querySelector('#categories-table tbody');
+            tbody.innerHTML = ''; 
+
+            categories.forEach(category => {
+                const row = document.createElement('tr');
+                row.dataset.id = category.id;
+
+                row.innerHTML = `
+                    <td>${category.id}</td>
+                    <td contenteditable="true">${category.name}</td>
+                    <td>
+                        <button class="update-button" onclick="updateCategory(this)">Update</button>
+                        <button class="delete-button" onclick="deleteCategory(this)">Delete</button>
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateCategory(button) {
+            var row = button.closest('tr');
+            var categoryId = row.dataset.id;
+            var name = row.cells[1].innerText;
+
+            fetch('/store/categories/'+categoryId+'/', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getCookie('access'),
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    // id: categoryId,
+                    name: name
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Category updated successfully!');
+                } else {
+                    alert('Error updating category.');
+                }
+            });
+        }
+
+        function deleteCategory(button) {
+            var row = button.closest('tr');
+            var categoryId = row.dataset.id;
+
+            fetch('/store/categories/'+categoryId+'/', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getCookie('access'),
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    //  id: categoryId 
+                    })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    row.remove();
+                    alert('Category deleted successfully!');
+                } else {
+                    alert('Error deleting category.');
+                }
+            });
+        }
+
+function addCategory() {
+    const name = document.getElementById('add-category-name').value.trim();
+
+    if (!name) {
+        alert('Please enter category name');
+        return;
+    }
+
+    const token = getCookie('access');
+    if (!token) {
+        alert('You need to log in first');
+        return;
+    }
+
+    fetch('/store/categories/', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            name: name
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // if (data.success) {
+            alert('Category added successfully!');
+            document.getElementById('add-category-form').reset();
+            loadCategories(); // Reload categories table to display new category
+        // } else {
+            // alert('Error adding category.');
+        // }
+    })
+    .catch(error => console.error('Error adding category:', error));
+}
+
+function addAuthor() {
+    const name = document.getElementById('add-author-name').value.trim();
+
+    if (!name) {
+        alert('Please enter author name');
+        return;
+    }
+
+    const token = getCookie('access');
+    if (!token) {
+        alert('You need to log in first');
+        return;
+    }
+
+    fetch('/store/authors/', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            name: name
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // if (data.success) {
+            alert('Author added successfully!');
+            document.getElementById('add-author-form').reset();
+            loadAuthors(); // Reload authors table to display new author
+        // } else {
+            // alert('Error adding author.');
+        // }
+    })
+    .catch(error => console.error('Error adding author:', error));
+}
+
+function addBook() {
+    const title = document.getElementById('add-book-title').value.trim();
+    const authorName = document.getElementById('add-book-author').value.trim();
+    const categoryName = document.getElementById('add-book-category').value.trim();
+    const publishedDate = document.getElementById('add-book-published-date').value.trim();
+    const isbn = document.getElementById('add-book-isbn').value.trim();
+    const price = document.getElementById('add-book-price').value.trim();
+
+    if (!title || !authorName || !categoryName || !publishedDate || !isbn || !price) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    const token = getCookie('access');
+    if (!token) {
+        alert('You need to log in first');
+        return;
+    }
+
+    fetch('/store/books/', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            title: title,
+            author: { name: authorName },
+            category: { name: categoryName },
+            published_date: publishedDate,
+            isbn: isbn,
+            price: price
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // if (data.success) {
+            alert('Book added successfully!');
+            document.getElementById('add-book-form').reset();
+            loadBooks(); // Reload books table to display new book
+        // } else {
+            // alert('Error adding book.');
+        // }
+    })
+    .catch(error => console.error('Error adding book:', error));
+}
+
+function addToCart(bookId) {
+    const token = getCookie('access');
+    if (!token) {
+        alert('You need to log in first');
+        return;
+    }
+
+    fetch(`/store/books/${bookId}/`, {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(book => {
+        const cartItems = document.querySelector('.cart-items');
+
+        // Create a cart item element
+        const cartItem = document.createElement('div');
+        cartItem.classList.add('cart-item');
+        cartItem.innerHTML = `
+            <h4>${book.title}</h4>
+            <p><strong>Author:</strong> ${book.author.name}</p>
+            <p><strong>Category:</strong> ${book.category.name}</p>
+            <p><strong>Price:</strong> $${book.price}</p>
+        `;
+
+        cartItems.appendChild(cartItem);
+        updateTotalPrice(book.price);
+
+
+        // Slide in the shopping cart
+        document.getElementById('shopping-cart').style.right = '0';
+    })
+    .catch(error => console.error('Error adding to cart:', error));
+}
+
+function updateTotalPrice(price) {
+    const totalPriceElement = document.getElementById('cart-total-price');
+    let currentTotal = parseFloat(totalPriceElement.textContent.replace('$', ''));
+    currentTotal += parseFloat(price);
+    totalPriceElement.textContent = `$${currentTotal.toFixed(2)}`;
+}
+
+function closeCart() {
+    document.getElementById('shopping-cart').style.right = '-300px'; // Slide out the shopping cart
+}
+
+function purchase() {
+    
+    alert('Purchase completed!');
+    const endpointUrl = '/store/email'; // Replace with your actual endpoint URL
+
+    fetch(endpointUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            // Add any additional headers if required
+        },
+        body: JSON.stringify({
+            email:'hamzaashraf458@gmail.com'
+            // Add any data you need to send with the email request
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to send email');
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Handle success response
+        console.log('Email sent successfully:', data);
+    })
+    .catch(error => {
+        console.error('Error sending email:', error);
+        // Handle error, show user a message, etc.
+    });
+}
+
+
+    </script>
+</body>
+</html>
